@@ -1,0 +1,15 @@
+# operator system files
+.DS_Store
+
+# exclude log files
+log
+
+# exclude ide files
+.buildpath
+.project
+.idea
+.vscode
+.settings
+
+# source code symbolic link
+workspace

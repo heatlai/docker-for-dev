@@ -1,0 +1,88 @@
+version: "3.7"
+
+services:
+  nginx:
+    env_file: .env
+    build:
+      context: ./nginx
+      args:
+        COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}
+    restart: always
+    networks:
+      frontend:
+      backend:
+        aliases:
+          - httpd
+          - nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./log/nginx:/var/log/nginx
+      - ./ssl:/etc/ssl
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/conf.inc:/etc/nginx/conf.inc
+      - ./nginx/conf.tmpl:/etc/nginx/conf.tmpl
+      - ./../workspace:/var/www/html/${COMPOSE_PROJECT_NAME}
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+    command: /bin/bash -c "
+        mkdir -p '/etc/nginx/sites-enabled'
+        && envsubst '$${COMPOSE_PROJECT_NAME}' < /etc/nginx/conf.tmpl/vhosts.conf > /etc/nginx/sites-enabled/vhosts.conf
+        && exec nginx -g 'daemon off;'
+      "
+    depends_on:
+      - php-fpm
+
+  php-fpm:
+    env_file: .env
+    build:
+      context: ./php-fpm
+      args:
+        COMPOSE_PROJECT_NAME: $COMPOSE_PROJECT_NAME
+    restart: always
+    volumes:
+      - ./../workspace:/var/www/html/${COMPOSE_PROJECT_NAME}
+    networks:
+      frontend:
+      backend:
+        aliases:
+          - php-fpm
+    expose:
+      - 9000
+
+  mysql:
+    env_file: .env
+    build:
+      context: ./mysql
+      args:
+        COMPOSE_PROJECT_NAME: $COMPOSE_PROJECT_NAME
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./mysql/my.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      frontend:
+      backend:
+        aliases:
+          - mysql
+    ports:
+      - 3306:3306
+
+networks:
+  frontend:
+    name: frontend
+    driver: bridge
+    ipam:
+      driver: default
+  backend:
+    name: backend
+    internal: true
+    driver: bridge
+    ipam:
+      driver: default
