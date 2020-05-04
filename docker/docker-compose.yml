@@ -65,7 +65,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./mysql/my.cnf:/etc/mysql/conf.d/mysql.cnf
-      - ./mysql/data:/var/lib/mysql
+#      - ./mysql/data:/var/lib/mysql
+      - dbdata:/var/lib/mysql
     networks:
       frontend:
       backend:
@@ -86,3 +87,6 @@ networks:
     driver: bridge
     ipam:
       driver: default
+
+volumes:
+  dbdata:
