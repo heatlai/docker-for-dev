@@ -10,10 +10,11 @@ services:
     restart: always
     networks:
       frontend:
+        aliases:
+          - ${COMPOSE_PROJECT_NAME}.internal
       backend:
         aliases:
           - httpd
-          - nginx
     ports:
       - 80:80
       - 443:443
@@ -46,8 +47,6 @@ services:
     networks:
       frontend:
       backend:
-        aliases:
-          - php-fpm
     expose:
       - 9000
 
@@ -70,8 +69,6 @@ services:
     networks:
       frontend:
       backend:
-        aliases:
-          - mysql
     ports:
       - 3306:3306
 
