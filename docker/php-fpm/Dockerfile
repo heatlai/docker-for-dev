@@ -17,40 +17,37 @@ RUN apt-get update \
 # install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libmcrypt-dev \
-    libpng-dev \
-    libwebp-dev \
+    zlib1g-dev \
+    vim \
+    # curl
     curl \
     libcurl4 \
     libcurl4-openssl-dev \
-    zlib1g-dev \
-    libicu-dev \
-    libmemcached-dev \
-    memcached \
-    default-mysql-client \
-    libmagickwand-dev \
-    unzip \
+    # zip
     libzip-dev \
     zip \
-    nano && \
-    rm -rf /var/lib/apt/lists/*
+    unzip \
+    # gd
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libpng-tools \
+    libwebp-dev \
+    # imagick
+    libmagickwand-dev \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # configure, install and enable all php packages
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
-RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd
-RUN docker-php-ext-configure mysqli --with-mysqli=mysqlnd
-RUN docker-php-ext-configure intl
-RUN docker-php-ext-configure zip
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd
+RUN docker-php-ext-configure zip \
+    && docker-php-ext-install -j$(nproc) zip
+RUN docker-php-ext-install -j$(nproc) pdo pdo_mysql
 RUN docker-php-ext-install -j$(nproc) bcmath
-RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-install -j$(nproc) opcache
-RUN docker-php-ext-install -j$(nproc) pdo_mysql
-RUN docker-php-ext-install -j$(nproc) mysqli
-RUN docker-php-ext-install -j$(nproc) intl
-RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) exif
+RUN pecl install imagick && docker-php-ext-enable imagick
 
 # composer install
 RUN curl -sS https://getcomposer.org/installer | php -- --quiet --install-dir=/usr/local/bin --filename=composer
