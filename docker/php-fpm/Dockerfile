@@ -35,7 +35,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libwebp-dev \
     # imagick
     libmagickwand-dev \
-    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 # configure, install and enable all php packages
